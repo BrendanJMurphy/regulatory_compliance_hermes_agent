@@ -84,15 +84,26 @@ def build_server(settings: Settings = SETTINGS) -> MCPServer:
     return server
 
 
-def _bearer_middleware(app, token: str):
-    """Reject any request without the shared bearer token. Wraps the Starlette app at the ASGI layer."""
+def _edge_middleware(app, token: str):
+    """ASGI wrapper applied in front of the MCP app.
+
+    1. Bearer auth: any request without the shared token gets 401 (when a token is configured).
+    2. GET is refused with 405. The server runs stateless, so the streamable-HTTP GET channel
+       (server-initiated messages) has nothing to send and would otherwise hold an event stream
+       open forever. Hermes probes new endpoints with HEAD then GET and reads the full body, so
+       an open stream makes its probe hang until timeout and the server never connects.
+       Refusing GET makes the probe fall through to the JSON-RPC POST handshake immediately.
+    """
     from starlette.responses import JSONResponse
 
     async def asgi(scope, receive, send):
         if scope["type"] == "http":
             headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
-            if headers.get("authorization") != f"Bearer {token}":
+            if token and headers.get("authorization") != f"Bearer {token}":
                 await JSONResponse({"error": "unauthorized"}, status_code=401)(scope, receive, send)
+                return
+            if scope.get("method") == "GET":
+                await JSONResponse({"error": "method not allowed; this server is stateless, use POST"}, status_code=405, headers={"Allow": "POST, DELETE"})(scope, receive, send)
                 return
         await app(scope, receive, send)
 
@@ -109,8 +120,7 @@ def main() -> None:
         print("[compliance-mcp] WARNING: COMPLIANCE_MCP_TOKEN is empty; the HTTP endpoint is unauthenticated. Dev only.", file=sys.stderr)
     security = TransportSecuritySettings(enable_dns_rebinding_protection=True, allowed_hosts=list(settings.allowed_hosts), allowed_origins=[])
     app = server.streamable_http_app(transport_security=security, host=settings.host, stateless_http=True, json_response=True)
-    if settings.bearer_token:
-        app = _bearer_middleware(app, settings.bearer_token)
+    app = _edge_middleware(app, settings.bearer_token)
     import uvicorn
 
     print(f"[compliance-mcp] listening on http://{settings.host}:{settings.port}/mcp  data={settings.data_dir}  audit={settings.audit_log}", file=sys.stderr)

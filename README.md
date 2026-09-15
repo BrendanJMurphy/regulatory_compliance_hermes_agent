@@ -23,7 +23,7 @@ Teams  ──▶  Hermes gateway (nousresearch/hermes-agent)  ──▶  complia
 | `mcp/` | The compliance MCP server: 13 read tools plus `draft_create`, role gating, hash-chained audit log, human review CLI. Fixture data under `mcp/data/`. |
 | `eval/` | Gold set and scorer for the extraction step (model risk validation). |
 | `scripts/` | `bootstrap.sh` (compose bring-up), `setup-cron.sh` (the two scheduled jobs). |
-| `docs/` | Controls matrix, rollout plan, verification log. |
+| `docs/` | Controls matrix, rollout plan, verification log, and a captured sample run. |
 
 ## Run it locally, without turning your machine into a Hermes box
 
@@ -54,6 +54,15 @@ docker compose exec compliance-mcp compliance-review approve D-20260915-abcd1234
 docker compose exec compliance-mcp compliance-audit verify
 docker compose exec compliance-mcp compliance-audit tail 50
 ```
+
+## Repeatable test runs
+
+```bash
+./scripts/reset-state.sh      # wipe drafts, audit log, sessions, memory
+./scripts/run-scenarios.sh    # 8 scenarios + human review + audit verify, saved to runs/<timestamp>/
+```
+
+`docs/sample-run.md` is one captured run. A full run costs well under a dollar on Sonnet.
 
 ## Develop the MCP server
 

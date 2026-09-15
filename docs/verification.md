@@ -24,8 +24,24 @@ Nothing was installed on the host and `~/.hermes` was never created.
 | MCP image | `docker build`, in-container service call | Builds; fixture data loads |
 | Compose file | `docker compose config --quiet` | Valid |
 
+## 2026-09-15, live run against anthropic/claude-sonnet-5 via OpenRouter
+
+| Check | Method | Result |
+|-------|--------|--------|
+| Hermes connects to compliance-mcp in a real session | `scripts/run-scenarios.sh` | First attempt failed: Hermes probes a new endpoint with HEAD then GET and reads the whole body; a stateless streamable-HTTP server answers GET with an open event stream, so the probe hung until timeout and 0 tools registered. Fixed by refusing GET with 405 at the ASGI edge (`server.py`). After the fix: 13 MCP tools registered, 85 tool calls across 8 scenarios. |
+| Charter identity rule on CLI | scenario 06 | Original charter refused any non-Teams session. Revised so CLI and cron sessions accept an operator-supplied `requester=`; the MCP server still enforces allowlist and roles. |
+| Guardrails | scenarios 03, 04, 05 | Unknown topic answered honestly with no invention; front-office draft attempt denied by the server; client trade data request refused without a tool call. |
+| Point-in-time policy | scenario 02 | Returned v2.0 for June 2024 and warned not to apply the later pre-clearance threshold retroactively. |
+| Regulatory intake | scenario 06 | Three releases, three drafts, verbatim quotes, covered/gap/review assessments with citations. |
+| Evidence pack | scenario 07 | Manifest hash, six tests, the failed test reported as a gap with its remediation ticket. |
+| Four-eyes | review CLI | Requester self-approval refused; approver group member approved; both in the audit chain. |
+| Audit chain | `compliance-audit verify` | 26 records, verified. |
+| Cost | OpenRouter key usage | USD 0.57 total for one failed and one successful full run. |
+
+Full output: `docs/sample-run.md`.
+
 ## Not verified
-- A live model round-trip. No governed endpoint exists yet; `eval/validate_extraction.py` is ready for it.
+- A governed (firm-hosted) model endpoint. OpenRouter was used with synthetic data only; `eval/validate_extraction.py` is ready for the real endpoint.
 - Teams end to end. Needs the Azure Bot registration and a tunnel or public ingress.
 - The `hermes doctor` warnings about npm vulnerabilities in the image's browser and web workspaces.
   Both toolsets are disabled here, but the packages are still in the image; raise with the platform team.

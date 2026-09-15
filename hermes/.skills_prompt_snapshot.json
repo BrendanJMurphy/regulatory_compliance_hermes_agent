@@ -2,10 +2,10 @@
   "version": 2,
   "manifest": {
     "compliance/regcomply-charter/SKILL.md": [
-      1789498498793202749,
-      2204,
+      1789502226125692965,
+      2709,
       30,
-      1789499572013065689
+      1789502226125692965
     ],
     "compliance/regulatory-intake/SKILL.md": [
       1789498498797118653,
@@ -34,35 +34,11 @@
     "autonomous-ai-agents/DESCRIPTION.md": [
       1789498284000000000,
       211,
-      91,
-      1789499572264043524
-    ],
-    "autonomous-ai-agents/hermes-agent/SKILL.md": [
-      1789498284000000000,
-      13183,
-      90,
-      1789499572263165982
+      378,
+      1789502434019537959
     ]
   },
   "skills": [
-    {
-      "skill_name": "hermes-agent",
-      "category": "autonomous-ai-agents",
-      "frontmatter_name": "hermes-agent",
-      "description": "Use, configure, theme, extend, and orchestrate Hermes Agent.",
-      "platforms": [
-        "linux",
-        "macos",
-        "windows"
-      ],
-      "conditions": {
-        "fallback_for_toolsets": [],
-        "requires_toolsets": [],
-        "fallback_for_tools": [],
-        "requires_tools": [],
-        "session_platforms": []
-      }
-    },
     {
       "skill_name": "attestation-reminders",
       "category": "compliance",
