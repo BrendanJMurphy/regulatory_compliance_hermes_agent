@@ -1,0 +1,14 @@
+{
+  "source": "FINRA",
+  "fetched": "2026-09-14T06:00:00Z",
+  "releases": [
+    {
+      "release_id": "FINRA-RN-26-19",
+      "source": "FINRA",
+      "published": "2026-08-28",
+      "title": "Regulatory Notice 26-19: Amendments to Rule 3220 (Influencing or Rewarding Employees of Others) gift limit",
+      "url": "https://www.finra.org/rules-guidance/notices/26-19",
+      "text": "FINRA has amended Rule 3220 to raise the annual gift limit from $100 to $250 per recipient per year, effective January 1, 2027. The amendment also codifies exclusions for promotional items of nominal value and for gifts given on account of a personal relationship unrelated to the business. Member firms must maintain a separate record of all gifts subject to the rule and supervise gift-giving through written procedures. Firms should review and update their gifts and entertainment policies and supervisory procedures before the effective date."
+    }
+  ]
+}

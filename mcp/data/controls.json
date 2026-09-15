@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {"control_id": "CTL-GE-01", "name": "Gifts register review", "description": "Monthly review of the gifts and entertainment register against policy limits, with exceptions escalated to the Head of Compliance.", "owner": "priya.natarajan@example-am.com", "test_frequency": "monthly", "policies": ["POL-GE"], "regulations": ["FINRA-3220", "FCA-SYSC-6"], "evidence": ["register export", "reviewer sign-off", "exception log"]},
+    {"control_id": "CTL-GE-02", "name": "Entertainment pre-clearance", "description": "System-enforced pre-clearance for entertainment over USD 250 per attendee.", "owner": "priya.natarajan@example-am.com", "test_frequency": "quarterly", "policies": ["POL-GE"], "regulations": ["FINRA-3220"], "evidence": ["pre-clearance system report"]},
+    {"control_id": "CTL-BX-01", "name": "Quarterly best execution review", "description": "Best Execution Committee reviews TCA reports quarterly; minutes and exception tracker retained.", "owner": "marcus.oyelaran@example-am.com", "test_frequency": "quarterly", "policies": ["POL-BX"], "regulations": ["FINRA-5310", "FCA-COBS-11.2A"], "evidence": ["TCA report", "committee minutes", "exception tracker"]},
+    {"control_id": "CTL-BX-02", "name": "Annual broker list reassessment", "description": "Approved broker list reassessed annually against execution quality data.", "owner": "marcus.oyelaran@example-am.com", "test_frequency": "annual", "policies": ["POL-BX"], "regulations": ["FINRA-5310"], "evidence": ["broker review memo"]},
+    {"control_id": "CTL-MK-01", "name": "Marketing pre-approval", "description": "Every marketing piece has a compliance approval record before first use.", "owner": "dana.whitfield@example-am.com", "test_frequency": "quarterly", "policies": ["POL-MK"], "regulations": ["SEC-206(4)-1", "FINRA-2210"], "evidence": ["approval log sample", "reviewer attestation"]}
+  ],
+  "test_results": [
+    {"test_id": "T-2026-001", "control_id": "CTL-GE-01", "tested_on": "2026-01-31", "tester": "internal-audit", "result": "pass", "notes": "12 exceptions, all escalated within SLA."},
+    {"test_id": "T-2026-014", "control_id": "CTL-GE-01", "tested_on": "2026-02-28", "tester": "internal-audit", "result": "pass", "notes": ""},
+    {"test_id": "T-2026-027", "control_id": "CTL-GE-01", "tested_on": "2026-03-31", "tester": "internal-audit", "result": "fail", "notes": "Two register entries above USD 100 lacked escalation record. Remediated via CHG-2026-0412."},
+    {"test_id": "T-2026-041", "control_id": "CTL-GE-01", "tested_on": "2026-04-30", "tester": "internal-audit", "result": "pass", "notes": ""},
+    {"test_id": "T-2026-055", "control_id": "CTL-GE-01", "tested_on": "2026-05-31", "tester": "internal-audit", "result": "pass", "notes": ""},
+    {"test_id": "T-2026-070", "control_id": "CTL-GE-01", "tested_on": "2026-06-30", "tester": "internal-audit", "result": "pass", "notes": ""},
+    {"test_id": "T-2026-010", "control_id": "CTL-BX-01", "tested_on": "2026-01-20", "tester": "compliance-testing", "result": "pass", "notes": "Q4 2025 review minuted."},
+    {"test_id": "T-2026-048", "control_id": "CTL-BX-01", "tested_on": "2026-04-22", "tester": "compliance-testing", "result": "pass", "notes": "Q1 2026 review minuted; 3 exceptions open."},
+    {"test_id": "T-2026-012", "control_id": "CTL-MK-01", "tested_on": "2026-01-25", "tester": "compliance-testing", "result": "pass", "notes": "Sample of 25, no unapproved pieces."},
+    {"test_id": "T-2026-050", "control_id": "CTL-MK-01", "tested_on": "2026-04-24", "tester": "compliance-testing", "result": "pass", "notes": "Sample of 25."}
+  ]
+}

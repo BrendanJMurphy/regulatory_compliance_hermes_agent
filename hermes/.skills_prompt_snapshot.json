@@ -1,0 +1,140 @@
+{
+  "version": 2,
+  "manifest": {
+    "compliance/regcomply-charter/SKILL.md": [
+      1789498498793202749,
+      2204,
+      30,
+      1789499572013065689
+    ],
+    "compliance/regulatory-intake/SKILL.md": [
+      1789498498797118653,
+      2488,
+      31,
+      1789499572013511689
+    ],
+    "compliance/policy-lookup/SKILL.md": [
+      1789498498795044701,
+      1426,
+      34,
+      1789499572014457898
+    ],
+    "compliance/attestation-reminders/SKILL.md": [
+      1789498498808660198,
+      1326,
+      35,
+      1789499572014934023
+    ],
+    "compliance/evidence-pack/SKILL.md": [
+      1789498498803535298,
+      1848,
+      36,
+      1789499572015533898
+    ],
+    "autonomous-ai-agents/DESCRIPTION.md": [
+      1789498284000000000,
+      211,
+      91,
+      1789499572264043524
+    ],
+    "autonomous-ai-agents/hermes-agent/SKILL.md": [
+      1789498284000000000,
+      13183,
+      90,
+      1789499572263165982
+    ]
+  },
+  "skills": [
+    {
+      "skill_name": "hermes-agent",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "hermes-agent",
+      "description": "Use, configure, theme, extend, and orchestrate Hermes Agent.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    },
+    {
+      "skill_name": "attestation-reminders",
+      "category": "compliance",
+      "frontmatter_name": "attestation-reminders",
+      "description": "Chase open attestations and training on the compliance ma...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    },
+    {
+      "skill_name": "evidence-pack",
+      "category": "compliance",
+      "frontmatter_name": "evidence-pack",
+      "description": "Assemble a draft evidence-pack index for a control over a...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    },
+    {
+      "skill_name": "policy-lookup",
+      "category": "compliance",
+      "frontmatter_name": "policy-lookup",
+      "description": "Answer \"what does our policy say\" questions with citations.",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    },
+    {
+      "skill_name": "regcomply-charter",
+      "category": "compliance",
+      "frontmatter_name": "regcomply-charter",
+      "description": "Operating rules for the compliance agent. Always loaded.",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    },
+    {
+      "skill_name": "regulatory-intake",
+      "category": "compliance",
+      "frontmatter_name": "regulatory-intake",
+      "description": "Draft obligation extraction and policy mapping for new re...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      }
+    }
+  ],
+  "category_descriptions": {
+    "autonomous-ai-agents": "Skills for spawning and orchestrating autonomous AI coding agents and multi-agent workflows — running independent agent processes, delegating tasks, and coordinating parallel workstreams."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "attestations": [
+    {"attestation_id": "ATT-2026-Q3-001", "type": "quarterly-code-of-ethics", "owner": "tom.reyes@example-am.com", "manager": "marcus.oyelaran@example-am.com", "due": "2026-09-30", "status": "open"},
+    {"attestation_id": "ATT-2026-Q3-002", "type": "quarterly-code-of-ethics", "owner": "priya.natarajan@example-am.com", "manager": "dana.whitfield@example-am.com", "due": "2026-09-30", "status": "complete"},
+    {"attestation_id": "TRN-2026-AML-014", "type": "annual-aml-training", "owner": "tom.reyes@example-am.com", "manager": "marcus.oyelaran@example-am.com", "due": "2026-09-20", "status": "open"},
+    {"attestation_id": "TRN-2026-GE-003", "type": "gifts-and-entertainment-training", "owner": "marcus.oyelaran@example-am.com", "manager": "dana.whitfield@example-am.com", "due": "2026-11-15", "status": "open"}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "release_id": "FINRA-RN-26-19",
+  "obligations": [
+    {"type": "requirement", "quote": "raise the annual gift limit from $100 to $250 per recipient per year", "date": "2027-01-01"},
+    {"type": "record-keeping", "quote": "Member firms must maintain a separate record of all gifts subject to the rule", "date": null},
+    {"type": "requirement", "quote": "supervise gift-giving through written procedures", "date": null}
+  ],
+  "expected_mappings": [{"policy_id": "POL-GE", "assessment": "gap"}]
+}

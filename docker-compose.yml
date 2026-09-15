@@ -1,0 +1,58 @@
+# Regulatory Change and Evidence agent: Hermes gateway + compliance MCP server.
+# Both services sit on an internal network. The gateway's only external needs are the
+# Teams webhook (inbound on TEAMS_PORT) and the firm's model endpoint (outbound, allowlisted
+# at the egress proxy). The MCP server has no network access except from the gateway.
+
+services:
+  gateway:
+    # hermes-agent 0.21.3 (upstream c294e945), pinned by digest. Update deliberately and re-run docs/verification.md.
+    image: nousresearch/hermes-agent@sha256:078d9b56d01ecfeeb38cbfd846d901a4077b6c7ae8636106d88e20d98df7f80c
+    container_name: regcomply-gateway
+    restart: unless-stopped
+    command: ["gateway", "run"]
+    env_file: .env
+    environment:
+      HERMES_UID: ${HERMES_UID:-10000}
+      HERMES_GID: ${HERMES_GID:-10000}
+    volumes:
+      - ./hermes:/opt/data
+    ports:
+      - "${TEAMS_PORT:-3978}:3978"
+    networks: [internal]
+    depends_on:
+      compliance-mcp:
+        condition: service_healthy
+    read_only: false
+    security_opt: [no-new-privileges:true]
+
+  compliance-mcp:
+    build: ./mcp
+    container_name: regcomply-mcp
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      COMPLIANCE_MCP_HOST: 0.0.0.0
+      COMPLIANCE_MCP_PORT: "8765"
+      COMPLIANCE_MCP_ALLOWED_HOSTS: compliance-mcp:8765,localhost:8765,127.0.0.1:8765
+      COMPLIANCE_DATA_DIR: /data
+      COMPLIANCE_STATE_DIR: /state
+      COMPLIANCE_AUDIT_LOG: /state/audit.jsonl
+    volumes:
+      - ./mcp/data:/data:ro
+      - mcp-state:/state
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8765), 2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  mcp-state:

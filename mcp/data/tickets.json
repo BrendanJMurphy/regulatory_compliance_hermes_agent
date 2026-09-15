@@ -1,0 +1,8 @@
+{
+  "tickets": [
+    {"ticket_id": "CHG-2026-0412", "created": "2026-04-03", "status": "closed", "type": "change", "title": "Add mandatory escalation field to gifts register", "controls": ["CTL-GE-01"], "policies": ["POL-GE"], "summary": "Register form updated so entries over USD 100 cannot be saved without an escalation reference. Closed 2026-04-18."},
+    {"ticket_id": "CHG-2025-0031", "created": "2025-01-10", "status": "closed", "type": "change", "title": "Publish POL-GE v2.1 and update training module", "controls": ["CTL-GE-01", "CTL-GE-02"], "policies": ["POL-GE"], "summary": "Policy v2.1 published to intranet; training module refreshed; attestation campaign launched."},
+    {"ticket_id": "INC-2026-0077", "created": "2026-05-12", "status": "open", "type": "incident", "title": "TCA vendor feed outage delayed Q1 exception closure", "controls": ["CTL-BX-01"], "policies": ["POL-BX"], "summary": "Vendor outage 2026-05-08 to 05-11. Exception review rescheduled; committee informed."},
+    {"ticket_id": "CHG-2026-0509", "created": "2026-06-02", "status": "in-progress", "type": "change", "title": "Draft POL-MK v1.5 for updated performance advertising guidance", "controls": ["CTL-MK-01"], "policies": ["POL-MK"], "summary": "Drafting in response to SEC staff FAQ update. Target effective 2026-10-01."}
+  ]
+}

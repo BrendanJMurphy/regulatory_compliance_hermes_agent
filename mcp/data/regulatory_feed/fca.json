@@ -1,0 +1,14 @@
+{
+  "source": "FCA",
+  "fetched": "2026-09-14T06:00:00Z",
+  "releases": [
+    {
+      "release_id": "FCA-PS26-9",
+      "source": "FCA",
+      "published": "2026-09-03",
+      "title": "PS26/9: Best execution reporting and the removal of RTS 28",
+      "url": "https://www.fca.org.uk/publications/policy-statements/ps26-9",
+      "text": "This Policy Statement confirms the removal of the requirement for firms to publish annual RTS 28 best execution reports. Firms remain subject to the overarching best execution obligation in COBS 11.2A and must continue to monitor execution quality, review execution arrangements at least annually, and be able to demonstrate to clients on request that orders were executed in accordance with the firm's execution policy. The changes take effect on 1 December 2026."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "source": "SEC",
+  "fetched": "2026-09-14T06:00:00Z",
+  "releases": [
+    {
+      "release_id": "SEC-2026-0812-MKTG",
+      "source": "SEC",
+      "published": "2026-08-12",
+      "title": "Staff FAQ update: net performance presentation for extracted performance under the Marketing Rule",
+      "url": "https://www.sec.gov/investment/marketing-faq",
+      "text": "The Division of Investment Management staff updated its Marketing Rule FAQ. Where an adviser presents extracted performance (performance of a subset of investments) in an advertisement, the staff will not object if gross extracted performance is shown without corresponding net extracted performance, provided that (1) the extracted performance is clearly identified as gross, (2) it is accompanied by the total portfolio's gross and net performance presented with at least equal prominence and calculated over the same period, and (3) the advertisement discloses how net performance of the total portfolio was calculated. Advisers must retain records supporting extracted performance for five years from last use."
+    },
+    {
+      "release_id": "SEC-2026-0721-BDR",
+      "source": "SEC",
+      "published": "2026-07-21",
+      "title": "Adopting release: amendments to Form N-PX filing deadlines",
+      "url": "https://www.sec.gov/rules/final/2026/n-px",
+      "text": "The Commission adopted amendments moving the annual Form N-PX filing deadline from August 31 to July 31 for reporting periods beginning on or after July 1, 2027. Registered funds and Section 13(f) managers must file proxy voting records by the new deadline. Compliance date: filings for the reporting period ending June 30, 2028."
+    }
+  ]
+}

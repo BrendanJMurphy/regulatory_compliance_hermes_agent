@@ -1,0 +1,10 @@
+{
+  "_comment": "Allowlist mirrored from Azure AD. In production this is synced from the directory group memberships, not hand edited.",
+  "users": [
+    {"id": "11111111-aaaa-4bbb-8ccc-000000000001", "upn": "priya.natarajan@example-am.com", "name": "Priya Natarajan", "groups": ["compliance-analysts"], "active": true},
+    {"id": "11111111-aaaa-4bbb-8ccc-000000000002", "upn": "marcus.oyelaran@example-am.com", "name": "Marcus Oyelaran", "groups": ["compliance-analysts", "compliance-approvers"], "active": true},
+    {"id": "11111111-aaaa-4bbb-8ccc-000000000003", "upn": "dana.whitfield@example-am.com", "name": "Dana Whitfield", "groups": ["compliance-approvers"], "active": true},
+    {"id": "11111111-aaaa-4bbb-8ccc-000000000004", "upn": "tom.reyes@example-am.com", "name": "Tom Reyes", "groups": ["front-office"], "active": true},
+    {"id": "11111111-aaaa-4bbb-8ccc-000000000005", "upn": "former.employee@example-am.com", "name": "Former Employee", "groups": ["compliance-analysts"], "active": false}
+  ]
+}

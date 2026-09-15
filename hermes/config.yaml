@@ -1,0 +1,113 @@
+# Hermes profile for the Regulatory Change and Evidence agent.
+# Mounted as HERMES_HOME (/opt/data) in the gateway container. Secrets live in .env, never here.
+# Validate after any change:  hermes doctor && hermes config get agent.disabled_toolsets
+
+_config_version: 45
+
+# ---- Model: a firm-hosted OpenAI-compatible endpoint inside the VPC ---------------------
+# (Azure OpenAI with a no-retention DPA, or vLLM on firm infrastructure). No consumer API keys.
+# Named provider entry (hermes_cli/providers.py resolve_user_provider). Verified on 0.21.3:
+# key_env reads the secret from the process environment or HERMES_HOME/.env; api_key with ${VAR}
+# substitution also works. Both are set so either source works. Hermes silently drops keys that
+# look like placeholders (hermes_cli/auth.py has_usable_secret), so a fake key must look real.
+model:
+  default: "${COMPLIANCE_MODEL}"
+  provider: "firm-llm"
+
+providers:
+  firm-llm:
+    name: "Firm LLM (VPC)"
+    base_url: "${COMPLIANCE_MODEL_BASE_URL}"
+    key_env: "COMPLIANCE_MODEL_API_KEY"
+    api_key: "${COMPLIANCE_MODEL_API_KEY}"
+
+# Auxiliary tasks (compression, approval classifier, MCP helper) default to provider "auto",
+# which inherits the main model above. Do not point any of them at an external provider.
+
+# ---- Tool surface: nothing but skills, the MCP server, cron, and gated memory -----------------
+agent:
+  # Denylist of every toolset defined in toolsets.py (hermes-agent 0.21.3) except:
+  #   skills (skills_list/skill_view/skill_manage), cronjob, memory, clarify, context_engine.
+  # Re-diff against toolsets.py on every upgrade; a new toolset is enabled unless listed here.
+  disabled_toolsets:
+    - web            # no outbound browsing; regulator feeds arrive via the MCP cache
+    - search
+    - x_search
+    - browser
+    - computer_use
+    - terminal       # the agent never gets a shell
+    - code_execution
+    - file           # no filesystem access; all data comes through compliance-mcp
+    - vision
+    - video
+    - image_gen
+    - video_gen
+    - tts
+    - todo
+    - session_search # no cross-session recall of other users' conversations
+    - connections
+    - project
+    - bot_room
+    - desktop_ui
+    - delegation     # no sub-agents; one accountable agent
+    - homeassistant
+    - kanban
+    - discord
+    - discord_admin
+    - yuanbao
+    - feishu_doc
+    - feishu_drive
+    - spotify
+    - debugging
+    - safe
+    - coding
+  max_turns: 40
+  reasoning_effort: "medium"
+  verify_on_stop: false
+
+# The terminal backend is disabled above; this is belt-and-braces so a misconfiguration
+# cannot silently hand the agent a shell on the gateway host.
+terminal:
+  backend: docker
+  docker_network: false
+  timeout: 10
+
+# ---- Skills: only the reviewed, checked-in set. ---------------------------------------------
+# Hub installs are a CLI-only action (`hermes skills install`), so they are gated by host access,
+# not by config. The agent's own skill_manage writes are staged for approval and security-scanned.
+skills:
+  external_dirs: []
+  project_discovery: false
+  guard_agent_created: true    # agent-authored skills are quarantined, never auto-loaded
+  write_approval: true
+  creation_nudge_interval: 0
+  auto_load:
+    - regcomply-charter
+
+# ---- Memory: allowed for continuity, but writes require approval and no user profiling -----
+memory:
+  memory_enabled: true
+  user_profile_enabled: false
+  write_approval: true
+  memory_char_limit: 2200
+
+# ---- Governed systems of record, via the compliance MCP server --------------------------------
+mcp_servers:
+  compliance:
+    url: "${COMPLIANCE_MCP_URL}"
+    headers:
+      Authorization: "Bearer ${COMPLIANCE_MCP_TOKEN}"
+    timeout: 30
+    connect_timeout: 5
+    enabled: true
+
+tool_output:
+  max_bytes: 50000
+  max_lines: 2000
+
+cron:
+  catch_up_missed: true
+
+compression:
+  enabled: true
+  threshold: 0.6

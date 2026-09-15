@@ -1,0 +1,9 @@
+{
+  "release_id": "FCA-PS26-9",
+  "obligations": [
+    {"type": "requirement", "quote": "removal of the requirement for firms to publish annual RTS 28 best execution reports", "date": "2026-12-01"},
+    {"type": "requirement", "quote": "review execution arrangements at least annually", "date": null},
+    {"type": "requirement", "quote": "be able to demonstrate to clients on request that orders were executed in accordance with the firm's execution policy", "date": null}
+  ],
+  "expected_mappings": [{"policy_id": "POL-BX", "assessment": "covered"}]
+}

@@ -1,0 +1,10 @@
+{
+  "release_id": "SEC-2026-0812-MKTG",
+  "obligations": [
+    {"type": "disclosure", "quote": "the extracted performance is clearly identified as gross", "date": null},
+    {"type": "disclosure", "quote": "accompanied by the total portfolio's gross and net performance presented with at least equal prominence", "date": null},
+    {"type": "disclosure", "quote": "discloses how net performance of the total portfolio was calculated", "date": null},
+    {"type": "record-keeping", "quote": "retain records supporting extracted performance for five years from last use", "date": null}
+  ],
+  "expected_mappings": [{"policy_id": "POL-MK", "assessment": "review"}]
+}
