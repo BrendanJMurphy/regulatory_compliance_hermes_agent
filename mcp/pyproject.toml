@@ -1,6 +1,6 @@
 [project]
 name = "compliance-mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "MCP server exposing governed compliance systems (policies, controls, regulatory feed, tickets, drafts) to a Hermes agent, with an append-only hash-chained audit log."
 requires-python = ">=3.11"
 dependencies = [
@@ -19,6 +19,8 @@ dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.11"]
 compliance-mcp = "compliance_mcp.server:main"
 compliance-review = "compliance_mcp.review_cli:main"
 compliance-audit = "compliance_mcp.audit:main"
+compliance-feed = "compliance_mcp.feed_fetcher:main"
+compliance-admin = "compliance_mcp.admin_cli:main"
 
 [build-system]
 requires = ["hatchling"]

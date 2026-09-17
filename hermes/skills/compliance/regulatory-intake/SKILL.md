@@ -29,6 +29,10 @@ a regulatory release. Output is always a draft for human review, never a decisio
    (e.g. "amend POL-GE Gift Limits before 2027-01-01; owner dana.whitfield").
 6. `draft_create(requester, kind="policy_mapping", title="<source> <release id>: <short title>",
    body=<draft>, related_ids=[release id, policy ids, control ids])`.
+   The server verifies every quoted string in the obligations table against the text of the
+   releases in `related_ids`. A paraphrase is refused with `draft_rejected` and the offending
+   quotes listed: fix them by copying the exact text (`regulatory_release_get` again if needed)
+   and resubmit. Do not shorten quotes to make them pass; quote the full clause.
 7. Reply with the draft id, a one-line summary per release (n obligations, n gaps), and
    "Pending review by an approver. Nothing has been changed."
 

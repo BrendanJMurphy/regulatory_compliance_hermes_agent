@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>FCA Policy Statements</title>
+  <entry>
+    <title>PS26/11: Consumer Duty outcomes reporting</title>
+    <link href="https://www.fca.org.uk/publications/policy-statements/ps26-11"/>
+    <updated>2026-09-10T09:30:00Z</updated>
+    <summary type="html">&lt;p&gt;Firms must submit outcomes data annually from 1 April 2027.&lt;/p&gt;</summary>
+  </entry>
+</feed>

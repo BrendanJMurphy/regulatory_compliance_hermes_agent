@@ -66,11 +66,26 @@ docker compose exec compliance-mcp compliance-audit tail 50
 three intake drafts, audit chain verified) and the runner calls it at the end. `docs/sample-run.md`
 is one captured run. A full run costs well under a dollar on Sonnet.
 
+## Operator commands
+
+| Command | Purpose |
+|---------|---------|
+| `compliance-review list / show / approve / reject` | Human review of drafts (OIDC-verified in production). |
+| `compliance-review export <draft_id> --out dir` | Zip evidence pack for an approved index: index, manifest, policy documents, audit excerpt, checksums. |
+| `compliance-audit verify / tail / spool` | Check the MAC'd hash chain across rotated files; show recent records; show forwarding backlog. |
+| `compliance-feed fetch --source SEC --url ...` | Pull a regulator RSS/Atom feed (host allowlist) into the cache without overwriting cached text. |
+| `compliance-admin purge --older-than-days N [--apply]` | Retention purge of decided drafts and rotated audit files; dry run by default. |
+
+The server also enforces rules the skills only describe: quotes in a policy mapping must be
+verbatim from the related release, and an evidence index must cite the manifest hash of the
+bundle recomputed for its control and period. A draft that breaks either rule is refused with
+`draft_rejected` and the agent corrects and resubmits.
+
 ## Develop the MCP server
 
 ```bash
 cd mcp && uv venv && . .venv/bin/activate && uv pip install -e ".[dev]"
-pytest && ruff check src tests && mypy              # 28 tests: identity, roles, drafts under race, audit chain/MAC/rotation/forwarding, OIDC, tool schemas
+pytest && ruff check src tests && mypy              # 39 tests: identity, roles, drafts under race, audit chain/MAC/rotation/forwarding, OIDC, tool schemas
 COMPLIANCE_MCP_TOKEN=dev compliance-mcp            # http://127.0.0.1:8765/mcp
 ```
 

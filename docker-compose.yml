@@ -46,7 +46,7 @@ services:
   compliance-mcp:
     <<: *hardening
     build: ./mcp
-    image: regcomply-mcp:0.2.0
+    image: regcomply-mcp:0.3.0
     container_name: regcomply-mcp
     env_file: .env
     environment:

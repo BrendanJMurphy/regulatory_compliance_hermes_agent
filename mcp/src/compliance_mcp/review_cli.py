@@ -4,6 +4,7 @@
     compliance-review show <draft_id>
     compliance-review approve <draft_id> --id-token <jwt> [--note "..."]
     compliance-review reject  <draft_id> --id-token <jwt> [--note "..."]
+    compliance-review export  <draft_id> --out <dir>      # approved evidence indexes only
 
 Who is approving is established by ``COMPLIANCE_REVIEW_IDENTITY_MODE``:
 
@@ -22,10 +23,12 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from pathlib import Path
 
 from .audit import AuditLog
 from .directory import AccessDenied, Directory
 from .drafts import DraftConflict, DraftStore
+from .evidence_export import ExportRefused, audit_lines_for, build_pack, period_from_title
 from .logging_setup import configure_logging
 from .models import DraftStatus
 from .oidc import OidcConfig, OidcVerifier, TokenInvalid
@@ -41,6 +44,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
     show_cmd = sub.add_parser("show", help="print one draft as JSON")
     show_cmd.add_argument("draft_id")
+
+    export_cmd = sub.add_parser("export", help="write an approved evidence index as a zip evidence pack")
+    export_cmd.add_argument("draft_id")
+    export_cmd.add_argument("--out", required=True, help="directory to write <draft_id>.zip into")
 
     for name, help_text in (("approve", "approve a pending draft"), ("reject", "reject a pending draft")):
         cmd = sub.add_parser(name, help=help_text)
@@ -84,9 +91,12 @@ def main(argv: list[str] | None = None, settings: Settings = SETTINGS) -> int:
         print(draft.model_dump_json(indent=2))
         return 0
 
-    decision = DraftStatus.APPROVED if args.cmd == "approve" else DraftStatus.REJECTED
     directory = Directory(settings.data_dir / "users.json", ttl_seconds=settings.directory_ttl_seconds)
     audit = AuditLog(settings.audit_log, "human-review-cli", hmac_key=settings.audit_hmac_key, rotate_bytes=settings.audit_rotate_bytes)
+    if args.cmd == "export":
+        return _export(args, settings, store, audit, directory)
+
+    decision = DraftStatus.APPROVED if args.cmd == "approve" else DraftStatus.REJECTED
     presented = args.as_upn or "<id-token>"
     try:
         upn = _approver_identity(args, settings)
@@ -114,6 +124,48 @@ def main(argv: list[str] | None = None, settings: Settings = SETTINGS) -> int:
             outcome="denied",
             result_summary=str(exc),
             args={"draft_id": args.draft_id, "os_user": os.environ.get("USER", "")},
+            directory_version=directory.version,
+        )
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+
+
+def _export(args: argparse.Namespace, settings: Settings, store: DraftStore, audit: AuditLog, directory: Directory) -> int:
+    """Build the evidence pack zip for an approved index. Refusals are audited like decisions."""
+    from .server import build_service  # local import: the service wires the systems of record
+
+    exporter = os.environ.get("USER", "operator")
+    try:
+        draft = store.get(args.draft_id)
+        if draft is None:
+            raise ExportRefused(f"no draft {args.draft_id}")
+        period = period_from_title(draft.title)
+        if period is None:
+            raise ExportRefused("draft title does not identify a control and period")
+        manifest = build_service(settings).compute_manifest(*period)
+        if manifest is None:
+            raise ExportRefused(f"unknown control {period[0]}")
+        pack = build_pack(draft, manifest, data_dir=settings.data_dir, audit_lines=audit_lines_for(args.draft_id, settings.audit_log), exporter=exporter)
+        out = Path(args.out) / f"{args.draft_id}.zip"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(pack)
+        audit.write(
+            requester=exporter,
+            tool="evidence_export",
+            outcome="ok",
+            result_summary=f"{args.draft_id} exported ({len(pack)} bytes)",
+            args={"draft_id": args.draft_id, "path": str(out), "manifest_sha256": manifest.manifest_sha256},
+            directory_version=directory.version,
+        )
+        print(f"wrote {out}")
+        return 0
+    except ExportRefused as exc:
+        audit.write(
+            requester=exporter,
+            tool="evidence_export",
+            outcome="denied",
+            result_summary=str(exc),
+            args={"draft_id": args.draft_id},
             directory_version=directory.version,
         )
         print(f"refused: {exc}", file=sys.stderr)

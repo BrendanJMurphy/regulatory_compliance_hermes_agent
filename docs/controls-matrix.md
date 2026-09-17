@@ -26,6 +26,11 @@ mechanism, not a promise. Anything marked *config* is only as good as the deploy
 | IN-1 | Input validation | Date arguments are pattern-checked in the MCP schema and validated as real, ordered dates; the clock override is disabled unless `COMPLIANCE_ALLOW_CLOCK_OVERRIDE`. Errors return a stable code; internals go to the log only. | `models.py`, `service.py` |
 | OPS-1 | Supply chain and build | Dependencies pinned with hashes; multi-stage non-root image; CI builds and scans the image (Trivy) and fails on lock-file drift. | `mcp/requirements.txt`, `.github/workflows/ci.yml` |
 | OPS-2 | Observability | JSON logs to stderr; Prometheus counters and latency histogram per tool at `/metrics`. | `logging_setup.py`, `server.py` |
+| DC-1 | Draft content is machine-checked | `policy_mapping`: every quote in the obligations table must appear verbatim in a related release; `evidence_pack_index`: the cited manifest hash must equal the bundle recomputed now for that control and period. Refused drafts return `draft_rejected` with reasons; the prompt rule is backed by a server rule. | `draft_checks.py`, `test_features.py` |
+| RL-1 | Runaway protection | Per-requester token bucket (`COMPLIANCE_RATE_LIMIT_PER_MINUTE`); denials audited. | `ratelimit.py` |
+| FE-1 | Only the fetcher touches the internet | `compliance-feed` pulls RSS/Atom from an explicit regulator host allowlist, strips to plain text, and never overwrites a cached release (edited text arrives as a new id, so quoted text stays stable). Runs as a separate job; the agent has no egress. | `feed_fetcher.py` |
+| EX-1 | Evidence packs are complete and verifiable | `compliance-review export` builds a zip only for an approved index: index, manifest, referenced policy documents (hash-checked), audit excerpt, cover sheet, `SHA256SUMS`. | `evidence_export.py` |
+| RET-1 | Retention | `compliance-admin purge` removes decided drafts and rotated audit files past the configured period; dry run by default; the purge itself is audited. The active audit file is never touched. | `admin_cli.py` |
 | TR-1 | Transport security to MCP | Bearer token (constant-time compare), DNS-rebinding protection, internal network only, GET refused. `/healthz` and `/metrics` are the only unauthenticated paths. | `server.py`, `docker-compose.yml` |
 
 ## Known limits
@@ -36,9 +41,11 @@ mechanism, not a promise. Anything marked *config* is only as good as the deploy
 - At first boot the image migrates `config.yaml` to its current schema in place and writes a backup
   under `hermes/backups/`. The mounted `hermes/` directory is therefore runtime state as well as
   config; treat the git copy as the source of truth and diff after upgrades.
-- Hermes does not yet pass the Teams sender identity to MCP servers per call. `header` mode
-  therefore needs an authenticating proxy between gateway and MCP server (or a Hermes change)
-  that stamps `X-Requester` from the platform identity. Until that exists, the shipped
+- Hermes does not pass the Teams sender identity to MCP servers per call (verified against
+  0.21.3: MCP requests carry no user metadata). `header` mode therefore needs either a Hermes
+  change or one gateway profile per user, each with its own static `X-Requester` header in
+  `mcp_servers.compliance.headers`. Per-user profiles are workable for a small team and make
+  identity transport-trusted; a Hermes change is the scalable path. Until that exists, the shipped
   configuration runs in `parameter` mode and is suitable for synthetic data only.
 - The review CLI runs on the container host. OIDC mode makes the approver identity trustworthy,
   but the intended end state is an approval surface inside Teams (adaptive card) or an SSO web

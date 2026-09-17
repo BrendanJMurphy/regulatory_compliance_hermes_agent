@@ -50,6 +50,17 @@ Full output: `docs/sample-run.md`.
 | Compose | `docker compose config`, `bootstrap.sh` | Valid; secrets generated; MCP health check on `/healthz` passes; gateway starts with the reduced capability set. |
 | Live scenario run with assertions | `scripts/run-scenarios.sh` then `scripts/check-run.py` | 0 assertion failures. 8 scenarios, 84 tool calls, 3 intake drafts, evidence index with the failed test surfaced, self-approval refused, approver sign-off, 25 MAC'd records verified. Found and fixed: with all capabilities dropped, s6-overlay could not signal its services and one-shot gateway runs never exited; `KILL` (and `FOWNER`) restored. |
 
+## 2026-09-17, release 0.3.0 (draft checks, rate limit, feed fetcher, export, purge)
+
+| Check | Method | Result |
+|-------|--------|--------|
+| Tests, lint, types | `pytest` (39), `ruff`, `mypy` | Pass. New coverage: verbatim-quote and manifest-hash checks, token bucket, RSS and Atom parsing, append-only cache merge, host allowlist refusal, zip export with checksum verification, purge dry-run and audit. |
+| Verbatim check against the live model | scenario 06 | The model's first `policy_mapping` draft was refused by the server (`draft_rejected`: no obligations table with quoted text). The agent read the reason, rebuilt the draft in the required format, and all three mappings were then accepted with verbatim quotes. The prompt rule is now enforced, not requested. |
+| Manifest-hash check against the live model | scenario 07 | Evidence index accepted on first attempt with the matching manifest hash. |
+| Full run with final prompts | `run-scenarios.sh` + `check-run.py` | 0 assertion failures, 26 records verified, 3 server-side draft rejections each followed by a corrected resubmission. Recorded in `docs/sample-run.md`. |
+| Scenario 04 prompt | `check-run.py` | The original placeholder prompt ("file a draft titled test") was refused by the agent itself, so the server denial never ran. Prompt replaced with a plausible finding note; server denial verified separately. |
+| Hermes per-call identity | source review of hermes-agent 0.21.3 `tools/mcp_tool_handlers.py` | MCP tool calls carry no user metadata. Documented per-user-profile path in the controls matrix. |
+
 ## Not verified
 - A governed (firm-hosted) model endpoint. OpenRouter was used with synthetic data only; `eval/validate_extraction.py` is ready for the real endpoint.
 - Teams end to end. Needs the Azure Bot registration and a tunnel or public ingress.

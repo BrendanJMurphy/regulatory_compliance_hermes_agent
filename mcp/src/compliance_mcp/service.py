@@ -22,6 +22,7 @@ from pydantic import ValidationError
 
 from .audit import AuditLog
 from .directory import ANALYST_GROUP, AccessDenied, Directory
+from .draft_checks import DraftRejected, check_draft
 from .drafts import DraftStore
 from .logging_setup import get_logger
 from .models import (
@@ -51,6 +52,7 @@ from .models import (
     User,
     parse_iso_date,
 )
+from .ratelimit import RateLimited, TokenBucketLimiter
 from .settings import Settings
 from .store import AttestationTracker, ControlLibrary, PolicyRepository, RegulatoryFeed, TicketSystem
 
@@ -85,12 +87,19 @@ def audited(tool: str, *, group: str | None = None, audit_args: Callable[..., di
             record = functools.partial(self._audit.write, tool=tool, args=persisted, session_id=caller.session_id, directory_version=self._directory.version)
             try:
                 user = self._directory.require_group(caller.requester, group) if group else self._directory.resolve(caller.requester)
+                self._limiter.check(user.upn)
                 result = fn(self, user, **kwargs)
                 record(requester=user.upn, outcome="ok", result_summary=result.summary)
                 return result
             except AccessDenied as exc:
                 record(requester=caller.requester, outcome="denied", result_summary=str(exc))
                 return ToolError(error="access_denied", detail=str(exc))
+            except RateLimited as exc:
+                record(requester=caller.requester, outcome="denied", result_summary=str(exc))
+                return ToolError(error="rate_limited", detail=str(exc))
+            except DraftRejected as exc:
+                record(requester=caller.requester, outcome="error", result_summary=f"draft_rejected: {exc}")
+                return ToolError(error="draft_rejected", detail=str(exc))
             except (InvalidInput, ValidationError) as exc:
                 detail = str(exc) if isinstance(exc, InvalidInput) else "argument failed validation"
                 record(requester=caller.requester, outcome="error", result_summary=f"invalid_input: {detail}")
@@ -132,6 +141,7 @@ class ComplianceService:
         self._tickets = TicketSystem(data / "tickets.json")
         self._feed = RegulatoryFeed(data / "regulatory_feed")
         self._attestations = AttestationTracker(data / "attestations.json")
+        self._limiter = TokenBucketLimiter(per_minute=settings.rate_limit_per_minute)
 
     # ---- policies ---------------------------------------------------------------------------
 
@@ -217,9 +227,24 @@ class ComplianceService:
     def evidence_bundle(self, user: User, *, control_id: str, start: IsoDate, end: IsoDate) -> EvidenceBundleResult:
         """Everything an examiner would ask for on one control over one period, plus detected gaps."""
         _validate_range(start, end)
+        manifest = self.compute_manifest(control_id, start, end)
+        if manifest is None:
+            raise NotFound(f"unknown control {control_id}")
+        summary = (
+            f"evidence for {control_id} {start}..{end}: {len(manifest.policy_versions)} policy versions, "
+            f"{len(manifest.test_results)} tests, {len(manifest.change_tickets)} tickets, {len(manifest.gaps)} gap(s)"
+        )
+        return EvidenceBundleResult(summary=summary, manifest=manifest)
+
+    def compute_manifest(self, control_id: str, start: str, end: str) -> EvidenceManifest | None:
+        """The evidence bundle for a control and period, or None for an unknown control.
+
+        Not audited on its own: it is called by ``evidence_bundle`` (audited), by draft checks,
+        and by the export command, all of which leave their own record.
+        """
         control = self._controls.get(control_id)
         if control is None:
-            raise NotFound(f"unknown control {control_id}")
+            return None
         policy_versions = tuple(
             PolicyVersionRef(**{k: getattr(v, k) for k in PolicyVersionRef.model_fields})
             for pid in control.policies
@@ -241,12 +266,7 @@ class ComplianceService:
             manifest_sha256="",
         )
         digest = hashlib.sha256(json.dumps(unsigned.model_dump(exclude={"manifest_sha256"}), sort_keys=True).encode()).hexdigest()
-        manifest = unsigned.model_copy(update={"manifest_sha256": digest})
-        summary = (
-            f"evidence for {control_id} {start}..{end}: {len(policy_versions)} policy versions, "
-            f"{len(results)} tests, {len(tickets)} tickets, {len(gaps)} gap(s)"
-        )
-        return EvidenceBundleResult(summary=summary, manifest=manifest)
+        return unsigned.model_copy(update={"manifest_sha256": digest})
 
     # ---- drafts: the only write path ------------------------------------------------------------------------
 
@@ -264,6 +284,14 @@ class ComplianceService:
         """Queue a draft for human review. Requires the analyst group. Publishes nothing."""
         if not title.strip() or not body.strip():
             raise InvalidInput("title and body are required")
+        check_draft(
+            kind=kind,
+            title=title,
+            body=body,
+            related_ids=tuple(related_ids),
+            lookup_release=self._feed.get,
+            recompute_hash=lambda c, s, e: m.manifest_sha256 if (m := self.compute_manifest(c, s, e)) else None,
+        )
         draft = self._drafts.create(kind=kind, title=title, body=body, requester=user.upn, related_ids=tuple(related_ids), session_id="")
         return DraftCreateResult(summary=f"draft {draft.draft_id} ({kind}) queued for human review", draft_id=draft.draft_id, status=draft.status)
 

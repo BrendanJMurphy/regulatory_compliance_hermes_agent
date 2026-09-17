@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>FINRA Regulatory Notices</title>
+    <item>
+      <title>Regulatory Notice 26-21: Supervision of &amp; Recordkeeping for Off-Channel Communications</title>
+      <link>https://www.finra.org/rules-guidance/notices/26-21</link>
+      <pubDate>Tue, 15 Sep 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<p>FINRA reminds member firms that <b>business communications</b> conducted on unapproved channels must be captured and retained.</p><p>Firms must review their written supervisory procedures by <strong>March 31, 2027</strong>.</p>]]></description>
+    </item>
+    <item>
+      <title>Empty item that should be skipped</title>
+      <link>https://www.finra.org/x</link>
+      <pubDate>Tue, 15 Sep 2026 14:00:00 GMT</pubDate>
+      <description></description>
+    </item>
+  </channel>
+</rss>

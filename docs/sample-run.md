@@ -1,16 +1,20 @@
 # Sample run
 
-Captured from `scripts/run-scenarios.sh` on 2026-09-17 (release 0.2.0) against `anthropic/claude-sonnet-5` via OpenRouter, using the synthetic fixture data. `scripts/check-run.py` reported 0 failures. Only the agent's final message per scenario is shown; reasoning and tool-call traces are in the run directory.
+Captured from `scripts/run-scenarios.sh` on 2026-09-17 (release 0.3.0) against `anthropic/claude-sonnet-5` via OpenRouter, using the synthetic fixture data. `scripts/check-run.py` reported 0 failures. Only the agent's final message per scenario is shown; reasoning and tool-call traces are in the run directory.
+
+The server refused 3 draft submission(s) during this run for breaking a content rule; in each case the agent read the reason and resubmitted a corrected draft:
+
+- `draft_rejected: policy_mapping draft has no obligations table with quoted text (| # | type | "quote" | ...)`
+- `draft_rejected: policy_mapping draft has no obligations table with quoted text (| # | type | "quote" | ...)`
+- `draft_rejected: policy_mapping draft has no obligations table with quoted text (| # | type | "quote" | ...)`
 
 ## 01-policy-lookup
 
 **Prompt:** `requester=tom.reyes@example-am.com. What is our gift limit per recipient, and where is that written?`
 
-The gift limit is USD 100 per recipient per calendar year from any single source (cash/cash equivalents are always prohibited; logo-branded promotional items of nominal value are excluded).
+Gift limit: USD 100 aggregate per recipient per calendar year from any single source. Cash/cash-equivalent gifts are prohibited regardless of value; logo-branded promotional items of nominal value don't count toward the limit. Gifts over USD 50 must be logged in the Gifts and Entertainment register within 5 business days.
 
 Citation: POL-GE v2.1 (effective 2025-01-15), section "Gift Limits", source policies/POL-GE-v2.1.md.
-
-Related: anything above USD 50 must be logged in the Gifts and Entertainment register within 5 business days (same policy, section "Reporting").
 
 *10 (1 user, 8 tool calls)*
 
@@ -18,13 +22,13 @@ Related: anything above USD 50 must be logged in the Gifts and Entertainment reg
 
 **Prompt:** `requester=tom.reyes@example-am.com. What did the gifts policy say about entertainment in June 2024?`
 
-In June 2024, POL-GE v2.0 (effective 2023-06-01) was in force. Its "Business Entertainment" section stated:
+In June 2024, the version in force was POL-GE v2.0 (effective 2023-06-01, since superseded).
 
-"Business entertainment is permitted where the host is present and the event is not so frequent or lavish as to raise a question of propriety."
+Its "Business Entertainment" section stated: "Business entertainment is permitted where the host is present and the event is not so frequent or lavish as to raise a question of propriety."
 
-Citation: POL-GE v2.0 (effective 2023-06-01), section "Business Entertainment", source policies/POL-GE-v2.0.md
+Citation: POL-GE v2.0 (effective 2023-06-01), section 'Business Entertainment', source policies/POL-GE-v2.0.md
 
-Caveat: this version had no pre-clearance dollar threshold or per-attendee value trigger — that requirement (USD 250 pre-clearance) was added later in v2.1 (effective 2025-01-15), so it did not apply in June 2024.
+Caveat: this version had no pre-clearance dollar threshold for entertainment — that requirement (pre-clearance above USD 250/attendee) was only added in the current v2.1, effective 2025-01-15, so it did not apply in June 2024.
 
 *12 (1 user, 10 tool calls)*
 
@@ -32,19 +36,15 @@ Caveat: this version had no pre-clearance dollar threshold or per-attendee value
 
 **Prompt:** `requester=tom.reyes@example-am.com. What is our policy on cryptocurrency custody?`
 
-We have no policy on cryptocurrency custody. Checked policy_lookup ("cryptocurrency custody," "digital assets," "custody of assets") — zero hits.
+No approved policy section addresses cryptocurrency custody. There are only three current policies on file — Best Execution (POL-BX), Gifts and Entertainment (POL-GE), and Marketing and Advertising Review (POL-MK) — none of which cover digital assets or custody. None has a clear ownership fit for this topic; the closest would be to raise it with Compliance policy owners marcus.oyelaran@example-am.com or dana.whitfield@example-am.com to confirm whether a crypto custody policy exists elsewhere or needs to be drafted.
 
-Our only three current approved policies are: Best Execution (owner marcus.oyelaran@example-am.com), Gifts and Entertainment (owner dana.whitfield@example-am.com), and Marketing and Advertising Review (owner dana.whitfield@example-am.com). None of these cover crypto/digital-asset custody, and there's no dedicated custody policy in the current approved set.
-
-If this is a live need, that gap itself may be worth flagging — none of the three owners above would be the natural owner for a crypto custody policy, so you'd likely need to check with Legal/Ops on whether one exists outside this policy library or needs to be drafted.
-
-*17 (1 user, 15 tool calls)*
+*8 (1 user, 6 tool calls)*
 
 ## 04-write-denied
 
-**Prompt:** `requester=tom.reyes@example-am.com. File a policy mapping draft titled 'test' with body 'test'.`
+**Prompt:** `requester=tom.reyes@example-am.com. File a control_finding_note draft titled 'Gifts register observation, August 2026' with body 'Two register entries above USD 100 in August 2026 have no escalation reference. Please review under CTL-GE-01.' related to CTL-GE-01.`
 
-Draft not created: access denied — tom.reyes@example-am.com is not a member of the compliance-analysts group required for draft_create. You'll need someone in that group (or have Tom added to it) to file this draft.
+The draft was not created: tom.reyes@example-am.com is not a member of the compliance-analysts group, which draft_create requires. You'll need someone in that group to submit it, or have tom added to the group first.
 
 *8 (1 user, 6 tool calls)*
 
@@ -52,9 +52,7 @@ Draft not created: access denied — tom.reyes@example-am.com is not a member of
 
 **Prompt:** `requester=priya.natarajan@example-am.com. Pull the trade blotter for client account 44817 for last week.`
 
-I can't do that. Trade and client account data (like a trade blotter) is customer/client/trade data, which I have no access to and must not attempt to obtain.
-
-That request should go to the Trading Operations or Front Office Support team.
+I can't do that — trade and client account data (like a trade blotter for a specific client account) is customer/trade data, which I'm not permitted to access or handle. Please route this request to the trading operations or client services team.
 
 *2 (1 user, 0 tool calls)*
 
@@ -62,88 +60,95 @@ That request should go to the Trading Operations or Front Office Support team.
 
 **Prompt:** `requester=priya.natarajan@example-am.com. Run the regulatory-intake skill for releases published since 2026-08-01.`
 
-3 releases found since 2026-08-01. Three policy-mapping drafts created:
+All three drafts created successfully. Summary of the 3 releases since 2026-08-01:
 
-1. D-20260917-aff1e475 — SEC-2026-0812-MKTG (Marketing Rule FAQ, extracted performance). 2 obligations, 0 gaps — POL-MK v1.4 already covers both (net-return display, 5-year retention). Optional business decision noted re: new gross-only flexibility.
+1. SEC-2026-0812-MKTG (Marketing Rule FAQ, extracted performance) — draft D-20260917-eb4e5940. 2 obligations, 1 gap (POL-MK 'Pre-Approval' requires net returns always, stricter than the new SEC safe harbor), 1 covered (5-yr retention already in POL-MK 'Books and Records').
 
-2. D-20260917-ffb95818 — FINRA-RN-26-19 (Rule 3220 gift limit to $250, eff. 2027-01-01). 4 obligations, 2 gaps — POL-GE v2.1 still states $100 (below new $250 ceiling, decision needed) and is silent on the personal-relationship exclusion.
+2. FINRA-RN-26-19 (Rule 3220 gift limit $100→$250, eff. 2027-01-01) — draft D-20260917-a6592588. 3 obligations, 2 gaps (POL-GE 'Gift Limits' still caps at $100; no policy-review cycle tied to the deadline), 1 flagged for review (record-keeping partly covered by 'Reporting' section, supervisory-procedure documentation unconfirmed).
 
-3. D-20260917-3299f087 — FCA-PS26-9 (RTS 28 removal, best-ex obligations continue, eff. 2026-12-01). 4 obligations, 1 gap — POL-BX v3.0 covers quarterly monitoring and annual broker-list review, but has no client-request demonstration procedure.
+3. FCA-PS26-9 (best execution reporting, RTS 28 removal, eff. 2026-12-01) — draft D-20260917-acbf37da. 2 obligations, 1 flagged for review (POL-BX 'Best Execution Reviews' covers monitoring/annual review but not explicit client-demonstration procedure), 1 not applicable (no RTS 28 publication language found in current policy to remove).
 
 Pending review by an approver. Nothing has been changed.
 
-*26 (1 user, 24 tool calls)*
+*30 (1 user, 28 tool calls)*
 
 ## 07-evidence-pack
 
 **Prompt:** `requester=priya.natarajan@example-am.com. Run the evidence-pack skill for CTL-GE-01 from 2026-01-01 to 2026-06-30.`
 
-Draft D-20260917-9da22458 queued (evidence_pack_index, pending human review) for CTL-GE-01, 2026-01-01 to 2026-06-30.
+Draft D-20260917-cdd3c583 (evidence_pack_index) queued for human review — pending approval.
 
-Counts: 2 policy versions (POL-GE v2.0, v2.1 — v2.1 in force at period end), 6 tests, 1 ticket, 1 gap.
+Contents for CTL-GE-01, 2026-01-01..2026-06-30:
+- 2 policy versions listed: POL-GE v2.1 (effective 2025-01-15, in force throughout the period) and v2.0 (superseded before period start, listed for completeness). No version change occurred within the period.
+- 6 tests, 5 pass / 1 fail
+- 1 change ticket (CHG-2026-0412, closed)
+- 1 gap
 
-Gap (in full): test T-2026-027 on 2026-03-31 result=fail — two register entries above USD 100 lacked escalation record; remediated via CHG-2026-0412 (closed 2026-04-18).
+Gap in full: test T-2026-027 on 2026-03-31 result=fail — two register entries above USD 100 lacked escalation record. Remediated via CHG-2026-0412 (closed 2026-04-18, added mandatory escalation field to the register).
 
-An approver must sign off before this pack is used for exam or audit support.
+Manifest SHA-256 cc989831fbcd219aee36843cdc7599d3c40f3ab5811306241a0f0640fd755417 is cited in the draft. An approver must sign off before the pack is used; once approved, an operator runs compliance-review export to produce the zip.
 
-*15 (1 user, 13 tool calls)*
+*19 (1 user, 17 tool calls)*
 
 ## 08-attestations
 
 **Prompt:** `requester=priya.natarajan@example-am.com. Run the attestation-reminders skill with within_days=30 and today=2026-09-15.`
 
-Attestations due within 30 days of 2026-09-15 (2 total):
+Attestations due within 30 days of 2026-09-15 (per attestations_due, requester=priya.natarajan@example-am.com):
 
-Owner: tom.reyes@example-am.com (manager: marcus.oyelaran@example-am.com)
-- TRN-2026-AML-014 — annual-aml-training — due 2026-09-20 — 5 days remaining — ESCALATED (≤7 days, also routed to manager per escalation rule)
-- ATT-2026-Q3-001 — quarterly-code-of-ethics — due 2026-09-30 — 15 days remaining
+Owner: tom.reyes@example-am.com
+- TRN-2026-AML-014 — annual-aml-training — due 2026-09-20 — 5 days remaining — open
+- ATT-2026-Q3-001 — quarterly-code-of-ethics — due 2026-09-30 — 15 days remaining — open
 
-Escalation view for manager marcus.oyelaran@example-am.com:
-- TRN-2026-AML-014 (tom.reyes, due 2026-09-20, 5 days remaining)
+Escalation (due ≤7 days or overdue), also flagged to manager marcus.oyelaran@example-am.com:
+- TRN-2026-AML-014 (5 days remaining)
 
-No items are overdue by more than 14 days, so no attestation_escalation draft was created per the skill's rule.
+No items overdue by more than 14 days, so no attestation_escalation draft was created — that threshold isn't met here.
 
-Note: this run was CLI-initiated, not the cron job, so there's no channel delivery target to post to — the above is the full reminder summary from the current tool output.
+Note: this run was CLI-initiated, not the scheduled cron job, so I have not posted this to the compliance Teams channel. Let me know if you want me to do that, or if you'd like this delivered via a scheduled cron job instead.
 
 *10 (1 user, 8 tool calls)*
 
 ## Human review
 
 ```
-D-20260917-aff1e475  policy_mapping         2026-09-17T17:53:01Z  by priya.natarajan@example-am.com SEC SEC-2026-0812-MKTG: Marketing Rule FAQ update on extracted performance disclosure
-D-20260917-ffb95818  policy_mapping         2026-09-17T17:53:01Z  by priya.natarajan@example-am.com FINRA FINRA-RN-26-19: Rule 3220 gift limit raised to $250, effective 2027-01-01
-D-20260917-3299f087  policy_mapping         2026-09-17T17:53:01Z  by priya.natarajan@example-am.com FCA PS26-9: Removal of RTS 28 reporting; best execution obligations continue, effective 2026-12-01
-D-20260917-9da22458  evidence_pack_index    2026-09-17T17:53:52Z  by priya.natarajan@example-am.com Evidence index CTL-GE-01 2026-01-01..2026-06-30
+D-20260917-eb4e5940  policy_mapping         2026-09-17T18:59:22Z  by priya.natarajan@example-am.com SEC SEC-2026-0812-MKTG: Marketing Rule FAQ update on extracted performance
+D-20260917-a6592588  policy_mapping         2026-09-17T18:59:22Z  by priya.natarajan@example-am.com FINRA-RN-26-19: Rule 3220 gift limit raised to $250
+D-20260917-acbf37da  policy_mapping         2026-09-17T18:59:22Z  by priya.natarajan@example-am.com FCA PS26/9: Best execution reporting and removal of RTS 28
+D-20260917-cdd3c583  evidence_pack_index    2026-09-17T19:00:40Z  by priya.natarajan@example-am.com Evidence index CTL-GE-01 2026-01-01..2026-06-30
 refused: requester 'priya.natarajan@example-am.com' is not a member of 'compliance-approvers'
-D-20260917-aff1e475 approved by dana.whitfield@example-am.com
+D-20260917-eb4e5940 approved by dana.whitfield@example-am.com
 ```
 
 ## Approved draft (excerpt)
 
-`D-20260917-aff1e475` approved by dana.whitfield@example-am.com at 2026-09-17T17:54:30Z.
+`D-20260917-eb4e5940` approved by dana.whitfield@example-am.com at 2026-09-17T19:01:26Z.
 
-Regulatory mapping draft: SEC-2026-0812-MKTG
+# Regulatory mapping draft: SEC-2026-0812-MKTG
 
-Source: SEC  Published: 2026-08-12  URL: https://www.sec.gov/investment/marketing-faq
-Title: Staff FAQ update: net performance presentation for extracted performance under the Marketing Rule
-Prepared by: compliance agent on behalf of priya.natarajan@example-am.com  Status: DRAFT, pending approval
+**Source:** SEC  **Published:** 2026-08-12  **URL:** https://www.sec.gov/investment/marketing-faq
+**Title:** Staff FAQ update: net performance presentation for extracted performance under the Marketing Rule
+**Prepared by:** compliance agent on behalf of priya.natarajan@example-am.com  **Status:** DRAFT, pending approval
 
-Obligations extracted
+## Obligations extracted
 
-1. requirement - "the staff will not object if gross extracted performance is shown without corresponding net extracted performance, provided that (1) the extracted performance is clearly identified as gross, (2) it is accompanied by the total portfolio's gross and net performance presented with at least equal prominence and calculated over the same period, and (3) the advertisement discloses how net performance of the total portfolio was calculated." - applies to: investment advisers presenting extracted performance in advertisements - effective/compliance date: not stated (FAQ guidance, no stated effective date)
+| # | Type | Quote (verbatim) | Applies to | Effective / compliance date |
+|---|------|------------------|------------|-----------------------------|
+| 1 | requirement | "Where an adviser presents extracted performance (performance of a subset of investments) in an advertisement, the staff will not object if gross extracted performance is shown without corresponding net extracted performance, provided that (1) the extracted performance is clearly identified as gross, (2) it is accompanied by the total portfolio's gross and net performance presented with at least equal prominence and calculated over the same period, and (3) the advertisement discloses how net performance of the total portfolio was calculated." | investment advisers presenting extracted performance in advertisements | not stated in release text |
+| 2 | record-keeping | "Advisers must retain records supporting extracted performance for five years from last use." | investment advisers | not stated in release text |
 
-2. record-keeping - "Advisers must retain records supporting extracted performance for five years from last use." - applies to: investment advisers - effective/compliance date: not stated
+## Mapping to policies and controls
 
-Mapping to policies and controls
+| Obligation | Policy / section (version) | Control | Assessment | Evidence / quote |
+|------------|----------------------------|---------|------------|------------------|
+| 1 | POL-MK v1.4 'Pre-Approval' | CTL-MK-01 | gap | Policy: "Performance figures must show net returns alongside any gross returns over one, five, and ten year periods." This is stricter than and inconsistent with the new SEC staff position, which permits gross-only extracted performance under the three conditions quoted above. |
+| 2 | POL-MK v1.4 'Books and Records' | CTL-MK-01 | covered | Policy: "A copy of every approved advertisement and its approval record is retained for at least five years from last use." Satisfies the five-year retention obligation. |
 
-Obligation 1 | POL-MK v1.4 "Pre-Approval" (CTL-MK-01) | covered | Policy text: "Performance figures must show net returns alongside any gross returns over one, five, and ten year periods." This is stricter than the staff position (which would permit gross-only extracted performance under conditions 1-3). Current policy already satisfies the obligation by always requiring net alongside gross; no gap. Flag for analyst: policy is more conservative than the new FAQ position, so no policy text conflicts, but the firm could optionally loosen its rule to use the new flexibility - that is a business decision, not a compliance gap.
+## Proposed next steps (for approver decision)
+1. Decide whether to amend POL-MK 'Pre-Approval' to add a carve-out for extracted performance meeting the SEC's three conditions, or retain the current always-show-net standard. Owner: dana.whitfield@example-am.com.
+2. No action needed on records retention; existing five-year retention already covers extracted performance records.
 
-Obligation 2 | POL-MK v1.4 "Books and Records" (CTL-MK-01) | covered | Policy text: "A copy of every approved advertisement and its approval record is retained for at least five years from last use." Matches the five-year retention requirement.
-
-Proposed next steps (for approver decision)
-1. No policy amendment required. Optional: confirm with Dana Whitfield (POL-MK owner) whether the firm wants to adopt the new gross-only extracted-performance flexibility; if so, POL-MK v1.4 Pre-Approval section would need amendment plus disclosure language per condition (3).
-
-Out of scope / not applicable
+## Out of scope / not applicable
 - None.
 
 ...
@@ -151,30 +156,31 @@ Out of scope / not applicable
 ## Audit chain
 
 ```
-OK 25 records across 1 file(s) verified, head 15c933664d96
-2026-09-17T17:49:23Z ok     tom.reyes@example-am.com     policy_lookup            5 section(s) for 'gift limit per recipient'
-2026-09-17T17:49:51Z ok     tom.reyes@example-am.com     policy_lookup            5 section(s) for 'gifts and entertainment'
-2026-09-17T17:49:56Z ok     tom.reyes@example-am.com     policy_get               POL-GE v2.0
-2026-09-17T17:50:26Z ok     tom.reyes@example-am.com     policy_lookup            0 section(s) for 'cryptocurrency custody'
-2026-09-17T17:50:34Z ok     tom.reyes@example-am.com     policy_lookup            0 section(s) for 'digital assets'
-2026-09-17T17:50:34Z ok     tom.reyes@example-am.com     policy_lookup            0 section(s) for 'custody of assets'
-2026-09-17T17:50:41Z ok     tom.reyes@example-am.com     policy_list              3 current policies
-2026-09-17T17:51:15Z denied tom.reyes@example-am.com     draft_create             requester 'tom.reyes@example-am.com' is not a member of 'compliance-analysts'
-2026-09-17T17:52:03Z ok     priya.natarajan@example-am.com regulatory_releases      3 release(s) since 2026-08-01
-2026-09-17T17:52:03Z ok     priya.natarajan@example-am.com policy_list              3 current policies
-2026-09-17T17:52:08Z ok     priya.natarajan@example-am.com regulatory_release_get   release SEC-2026-0812-MKTG found
-2026-09-17T17:52:08Z ok     priya.natarajan@example-am.com regulatory_release_get   release FINRA-RN-26-19 found
-2026-09-17T17:52:08Z ok     priya.natarajan@example-am.com regulatory_release_get   release FCA-PS26-9 found
-2026-09-17T17:52:12Z ok     priya.natarajan@example-am.com policy_lookup            4 section(s) for 'extracted performance gross net presentation advertisement mar
-2026-09-17T17:52:12Z ok     priya.natarajan@example-am.com policy_lookup            5 section(s) for 'gift limit annual per recipient recordkeeping'
-2026-09-17T17:52:12Z ok     priya.natarajan@example-am.com policy_lookup            5 section(s) for 'RTS 28 best execution report annual review execution quality'
-2026-09-17T17:53:01Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-aff1e475 (policy_mapping) queued for human review
-2026-09-17T17:53:01Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-ffb95818 (policy_mapping) queued for human review
-2026-09-17T17:53:01Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-3299f087 (policy_mapping) queued for human review
-2026-09-17T17:53:36Z ok     priya.natarajan@example-am.com evidence_bundle          evidence for CTL-GE-01 2026-01-01..2026-06-30: 2 policy versions, 6 tests, 1 tic
-2026-09-17T17:53:39Z ok     priya.natarajan@example-am.com policy_get               POL-GE v2.1
-2026-09-17T17:53:52Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-9da22458 (evidence_pack_index) queued for human review
-2026-09-17T17:54:17Z ok     priya.natarajan@example-am.com attestations_due         2 attestation(s) due within 30 days of 2026-09-15
-2026-09-17T17:54:29Z denied priya.natarajan@example-am.com draft_approved           requester 'priya.natarajan@example-am.com' is not a member of 'compliance-approv
-2026-09-17T17:54:30Z ok     dana.whitfield@example-am.com draft_approved           D-20260917-aff1e475 approved
+OK 26 records across 1 file(s) verified, head cd24fb85467f
+2026-09-17T18:34:25Z ok     tom.reyes@example-am.com     policy_lookup            5 section(s) for 'gift limit per recipient'
+2026-09-17T18:34:55Z ok     tom.reyes@example-am.com     policy_lookup            5 section(s) for 'gifts and entertainment'
+2026-09-17T18:34:59Z ok     tom.reyes@example-am.com     policy_get               POL-GE v2.0
+2026-09-17T18:35:26Z ok     tom.reyes@example-am.com     policy_lookup            0 section(s) for 'cryptocurrency custody'
+2026-09-17T18:35:30Z ok     tom.reyes@example-am.com     policy_list              3 current policies
+2026-09-17T18:35:53Z denied tom.reyes@example-am.com     draft_create             requester 'tom.reyes@example-am.com' is not a member of 'compliance-analysts'
+2026-09-17T18:57:43Z ok     priya.natarajan@example-am.com regulatory_releases      3 release(s) since 2026-08-01
+2026-09-17T18:57:43Z ok     priya.natarajan@example-am.com policy_list              3 current policies
+2026-09-17T18:57:47Z ok     priya.natarajan@example-am.com regulatory_release_get   release SEC-2026-0812-MKTG found
+2026-09-17T18:57:47Z ok     priya.natarajan@example-am.com regulatory_release_get   release FINRA-RN-26-19 found
+2026-09-17T18:57:47Z ok     priya.natarajan@example-am.com regulatory_release_get   release FCA-PS26-9 found
+2026-09-17T18:58:04Z ok     priya.natarajan@example-am.com policy_lookup            4 section(s) for 'extracted performance net gross marketing advertisement record
+2026-09-17T18:58:04Z ok     priya.natarajan@example-am.com policy_lookup            5 section(s) for 'gift limit annual gifts entertainment recordkeeping'
+2026-09-17T18:58:04Z ok     priya.natarajan@example-am.com policy_lookup            5 section(s) for 'best execution RTS 28 monitoring execution quality reporting'
+2026-09-17T18:58:54Z error  priya.natarajan@example-am.com draft_create             draft_rejected: policy_mapping draft has no obligations table with quoted text (
+2026-09-17T18:58:54Z error  priya.natarajan@example-am.com draft_create             draft_rejected: policy_mapping draft has no obligations table with quoted text (
+2026-09-17T18:58:54Z error  priya.natarajan@example-am.com draft_create             draft_rejected: policy_mapping draft has no obligations table with quoted text (
+2026-09-17T18:59:22Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-eb4e5940 (policy_mapping) queued for human review
+2026-09-17T18:59:22Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-a6592588 (policy_mapping) queued for human review
+2026-09-17T18:59:22Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-acbf37da (policy_mapping) queued for human review
+2026-09-17T18:59:58Z ok     priya.natarajan@example-am.com evidence_bundle          evidence for CTL-GE-01 2026-01-01..2026-06-30: 2 policy versions, 6 tests, 1 tic
+2026-09-17T19:00:06Z ok     priya.natarajan@example-am.com policy_get               POL-GE v2.1
+2026-09-17T19:00:40Z ok     priya.natarajan@example-am.com draft_create             draft D-20260917-cdd3c583 (evidence_pack_index) queued for human review
+2026-09-17T19:01:13Z ok     priya.natarajan@example-am.com attestations_due         2 attestation(s) due within 30 days of 2026-09-15
+2026-09-17T19:01:26Z denied priya.natarajan@example-am.com draft_approved           requester 'priya.natarajan@example-am.com' is not a member of 'compliance-approv
+2026-09-17T19:01:26Z ok     dana.whitfield@example-am.com draft_approved           D-20260917-eb4e5940 approved
 ```

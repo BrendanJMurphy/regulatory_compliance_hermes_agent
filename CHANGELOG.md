@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (2026-09-17)
+
+Controls that back the prompt rules with server rules, plus the missing operational pieces.
+
+- Draft content checks: verbatim-quote verification for policy mappings; manifest-hash
+  verification for evidence indexes. New `draft_rejected` error code.
+- Per-requester rate limiting with audited denials.
+- Regulator feed fetcher (`compliance-feed`): host allowlist, plain-text extraction,
+  append-only cache so quoted text never changes under a draft.
+- Evidence pack export (`compliance-review export`): approved indexes only; zip with index,
+  manifest, hash-checked policy documents, audit excerpt, cover sheet, and `SHA256SUMS`.
+- Retention purge (`compliance-admin purge`): dry run by default, audited when applied.
+- Verified that Hermes 0.21.3 sends no per-call user metadata to MCP; documented the
+  per-user-profile path for transport-trusted identity.
+
 ## 0.2.0 (2026-09-17)
 
 Hardening pass toward an enterprise-grade control environment.

@@ -250,12 +250,18 @@ class DraftSummary(_Frozen):
 class ToolError(_Frozen):
     """Returned instead of a result when a call is refused or fails.
 
-    ``error`` is a short stable code the model can branch on. ``detail`` is safe to show and
-    never contains paths, stack traces, or other internals; those go to the server log.
+    ``error`` is a short stable code the model can branch on:
+      access_denied   caller unknown, inactive, or lacking the group
+      rate_limited    caller exceeded the per-minute budget; wait and retry
+      invalid_input   an argument failed validation; fix it and retry
+      draft_rejected  draft content broke a rule (e.g. non-verbatim quote); fix content and retry
+      not_found       a referenced record does not exist
+      internal_error  the server failed; the error is logged
+    ``detail`` is safe to show and never contains paths, stack traces, or other internals.
     """
 
     ok: Literal[False] = False
-    error: Literal["access_denied", "invalid_input", "not_found", "internal_error"]
+    error: Literal["access_denied", "rate_limited", "invalid_input", "draft_rejected", "not_found", "internal_error"]
     detail: str
 
 

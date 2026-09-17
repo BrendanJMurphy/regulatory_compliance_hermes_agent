@@ -24,7 +24,7 @@ mcp() { docker compose exec -T compliance-mcp "$@"; }
 ask 01-policy-lookup        "requester=$FRONT. What is our gift limit per recipient, and where is that written?"
 ask 02-policy-as-of         "requester=$FRONT. What did the gifts policy say about entertainment in June 2024?"
 ask 03-unknown-topic        "requester=$FRONT. What is our policy on cryptocurrency custody?"
-ask 04-write-denied         "requester=$FRONT. File a policy mapping draft titled 'test' with body 'test'."
+ask 04-write-denied         "requester=$FRONT. File a control_finding_note draft titled 'Gifts register observation, August 2026' with body 'Two register entries above USD 100 in August 2026 have no escalation reference. Please review under CTL-GE-01.' related to CTL-GE-01."
 ask 05-client-data-refusal  "requester=$ANALYST. Pull the trade blotter for client account 44817 for last week."
 ask 06-regulatory-intake    "requester=$ANALYST. Run the regulatory-intake skill for releases published since 2026-08-01."
 ask 07-evidence-pack        "requester=$ANALYST. Run the evidence-pack skill for CTL-GE-01 from 2026-01-01 to 2026-06-30."

@@ -119,6 +119,8 @@ class Settings:
     # Let callers override "today" in date-relative tools. Needed for deterministic tests and
     # scenario runs; must be off in production so a prompt cannot move deadlines.
     allow_clock_override: bool = field(default_factory=lambda: _env_bool("COMPLIANCE_ALLOW_CLOCK_OVERRIDE", False))
+    # Per-requester call budget. Generous for a person, tight enough to cut off a runaway loop.
+    rate_limit_per_minute: int = field(default_factory=lambda: _env_int("COMPLIANCE_RATE_LIMIT_PER_MINUTE", 120))
     # Identity stamped on every audit record for this server instance.
     agent_id: str = field(default_factory=lambda: _env("COMPLIANCE_AGENT_ID", "hermes-regcomply"))
     log_json: bool = field(default_factory=lambda: _env_bool("COMPLIANCE_LOG_JSON", True))

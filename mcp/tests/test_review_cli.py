@@ -18,7 +18,7 @@ from tests.conftest import ANALYST, APPROVER, BOTH, FRONT_OFFICE, HMAC_KEY, call
 
 
 def _file_draft(svc, by=BOTH) -> str:
-    return svc.draft_create(caller(by), kind=DraftKind.POLICY_MAPPING, title="t", body="b").draft_id
+    return svc.draft_create(caller(by), kind=DraftKind.CONTROL_FINDING_NOTE, title="t", body="b").draft_id
 
 
 def test_dev_mode_enforces_four_eyes_and_approver_group(svc, settings, capsys):

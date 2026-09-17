@@ -14,7 +14,7 @@ from tests.conftest import ANALYST, APPROVER, BOTH, DATA, SERVICE
 
 def test_draft_is_decided_exactly_once_under_a_race(settings):
     store = DraftStore(settings.drafts_db)
-    draft = store.create(kind=DraftKind.POLICY_MAPPING, title="t", body="b", requester=ANALYST, related_ids=())
+    draft = store.create(kind=DraftKind.CONTROL_FINDING_NOTE, title="t", body="b", requester=ANALYST, related_ids=())
     outcomes: list[str] = []
     barrier = threading.Barrier(2)
 
@@ -42,7 +42,7 @@ def test_rejected_drafts_stay_as_a_record_and_cannot_be_reopened(settings):
     assert store.list(DraftStatus.REJECTED)[0].decision.note == "not needed"
     with pytest.raises(DraftConflict):
         store.decide(d.draft_id, decision=DraftStatus.APPROVED, by=APPROVER)
-    assert store.create(kind=DraftKind.POLICY_MAPPING, title="x", body="y", requester=ANALYST, related_ids=()).related_ids == ()
+    assert store.create(kind=DraftKind.CONTROL_FINDING_NOTE, title="x", body="y", requester=ANALYST, related_ids=()).related_ids == ()
 
 
 def test_directory_reloads_when_the_file_changes(tmp_path):

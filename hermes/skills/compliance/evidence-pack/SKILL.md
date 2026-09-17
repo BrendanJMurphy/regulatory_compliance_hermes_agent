@@ -24,6 +24,10 @@ An analyst asks for the evidence pack, exam support, or audit index for a contro
    each ticket with status, the gaps list verbatim from the tool, and the manifest hash.
 5. `draft_create(requester, kind="evidence_pack_index", title="Evidence index <control> <start>..<end>",
    body=<index>, related_ids=[control id, test ids, ticket ids])`.
+   The title format is mandatory: the server parses the control and period from it, recomputes
+   the evidence bundle, and refuses the draft (`draft_rejected`) unless the body cites the
+   matching manifest SHA-256. If refused, call `evidence_bundle` again and rebuild the index.
+   Once approved, an operator runs `compliance-review export` to produce the zip pack.
 6. Reply with the draft id, counts (policy versions, tests, tickets, gaps), and the gaps in full.
    State that an approver must sign off before the pack is used.
 

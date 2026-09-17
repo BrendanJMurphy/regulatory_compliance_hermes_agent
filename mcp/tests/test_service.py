@@ -30,12 +30,12 @@ def test_reads_are_open_to_active_users_only(svc):
 
 
 def test_draft_create_requires_analyst_group(svc):
-    denied = svc.draft_create(caller(FRONT_OFFICE), kind=DraftKind.POLICY_MAPPING, title="t", body="b")
+    denied = svc.draft_create(caller(FRONT_OFFICE), kind=DraftKind.CONTROL_FINDING_NOTE, title="t", body="b")
     assert isinstance(denied, ToolError) and denied.error == "access_denied"
-    ok = svc.draft_create(caller(ANALYST), kind=DraftKind.POLICY_MAPPING, title="Map FINRA 26-19", body="body", related_ids=("FINRA-RN-26-19",))
+    ok = svc.draft_create(caller(ANALYST), kind=DraftKind.CONTROL_FINDING_NOTE, title="Note on FINRA 26-19", body="body", related_ids=("FINRA-RN-26-19",))
     assert ok.ok and ok.status == "pending"
     assert svc.draft_list(caller(FRONT_OFFICE)).drafts[0].draft_id == ok.draft_id
-    assert svc.draft_create(caller(SERVICE), kind=DraftKind.POLICY_MAPPING, title="cron", body="b").ok, "service account may file drafts"
+    assert svc.draft_create(caller(SERVICE), kind=DraftKind.CONTROL_FINDING_NOTE, title="cron", body="b").ok, "service account may file drafts"
 
 
 def test_invalid_dates_are_rejected_before_any_work(svc):
@@ -81,7 +81,7 @@ def test_regulatory_feed(svc):
 
 def test_every_call_is_audited_with_session_and_directory_version(svc, settings, directory):
     svc.policy_lookup(caller(ANALYST, "sess-A"), query="best execution")
-    svc.draft_create(caller(FRONT_OFFICE, "sess-B"), kind=DraftKind.POLICY_MAPPING, title="t", body="b")
+    svc.draft_create(caller(FRONT_OFFICE, "sess-B"), kind=DraftKind.CONTROL_FINDING_NOTE, title="t", body="b")
     svc.evidence_bundle(caller(ANALYST, "sess-C"), control_id="CTL-NOPE", start="2026-01-01", end="2026-02-01")
     recs = [json.loads(line) for line in settings.audit_log.read_text().splitlines()]
     assert [r["outcome"] for r in recs] == ["ok", "denied", "error"]
