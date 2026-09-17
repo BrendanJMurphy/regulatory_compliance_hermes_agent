@@ -1,0 +1,7 @@
+# Changes to these paths alter the control environment and need a security review.
+/hermes/config.yaml          @BrendanJMurphy
+/hermes/skills/              @BrendanJMurphy
+/hermes/.no-bundled-skills   @BrendanJMurphy
+/mcp/src/compliance_mcp/     @BrendanJMurphy
+/docker-compose.yml          @BrendanJMurphy
+/.github/workflows/          @BrendanJMurphy

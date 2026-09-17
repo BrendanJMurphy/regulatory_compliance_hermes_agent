@@ -40,6 +40,16 @@ Nothing was installed on the host and `~/.hermes` was never created.
 
 Full output: `docs/sample-run.md`.
 
+## 2026-09-17, hardening release 0.2.0
+
+| Check | Method | Result |
+|-------|--------|--------|
+| Unit and integration tests | `pytest` (28) | Pass. Covers identity modes, role gating, four-eyes, OIDC token verification with a generated RSA key, draft decided once under a thread race, directory reload on file change, invalid and inverted dates, clock-override gate, gap arithmetic, internal-error redaction, audit tamper/forgery/rotation/concurrency, spooled forwarding with a failing sink, tool surface and schemas, edge middleware. |
+| Static checks | `ruff check`, `ruff format --check`, `mypy` | Clean. |
+| Reproducible image | `scripts/lock-deps.sh`, `docker build` with `--require-hashes` | Builds; runs as uid 10001 with a read-only root filesystem and all capabilities dropped. |
+| Compose | `docker compose config`, `bootstrap.sh` | Valid; secrets generated; MCP health check on `/healthz` passes; gateway starts with the reduced capability set. |
+| Live scenario run with assertions | `scripts/run-scenarios.sh` then `scripts/check-run.py` | 0 assertion failures. 8 scenarios, 84 tool calls, 3 intake drafts, evidence index with the failed test surfaced, self-approval refused, approver sign-off, 25 MAC'd records verified. Found and fixed: with all capabilities dropped, s6-overlay could not signal its services and one-shot gateway runs never exited; `KILL` (and `FOWNER`) restored. |
+
 ## Not verified
 - A governed (firm-hosted) model endpoint. OpenRouter was used with synthetic data only; `eval/validate_extraction.py` is ready for the real endpoint.
 - Teams end to end. Needs the Azure Bot registration and a tunnel or public ingress.

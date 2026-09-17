@@ -20,7 +20,7 @@ Teams  ──▶  Hermes gateway (nousresearch/hermes-agent)  ──▶  complia
 |------|------|
 | `hermes/config.yaml` | Hermes profile: governed model endpoint, disabled toolsets, skill lockdown, MCP wiring. Mounted at `/opt/data`. |
 | `hermes/skills/compliance/` | The five skills: charter (always loaded), policy-lookup, regulatory-intake, evidence-pack, attestation-reminders. |
-| `mcp/` | The compliance MCP server: 13 read tools plus `draft_create`, role gating, hash-chained audit log, human review CLI. Fixture data under `mcp/data/`. |
+| `mcp/` | The compliance MCP server: 12 read tools plus `draft_create`, typed contracts, identity resolution, role gating, MAC'd hash-chained audit log with spooled forwarding, SQLite review queue, OIDC-verified review CLI. Fixture data under `mcp/data/`. |
 | `eval/` | Gold set and scorer for the extraction step (model risk validation). |
 | `scripts/` | `bootstrap.sh` (compose bring-up), `setup-cron.sh` (the two scheduled jobs). |
 | `docs/` | Controls matrix, rollout plan, verification log, and a captured sample run. |
@@ -62,13 +62,15 @@ docker compose exec compliance-mcp compliance-audit tail 50
 ./scripts/run-scenarios.sh    # 8 scenarios + human review + audit verify, saved to runs/<timestamp>/
 ```
 
-`docs/sample-run.md` is one captured run. A full run costs well under a dollar on Sonnet.
+`scripts/check-run.py` asserts the run's invariants (guardrails held, tools used where required,
+three intake drafts, audit chain verified) and the runner calls it at the end. `docs/sample-run.md`
+is one captured run. A full run costs well under a dollar on Sonnet.
 
 ## Develop the MCP server
 
 ```bash
 cd mcp && uv venv && . .venv/bin/activate && uv pip install -e ".[dev]"
-pytest                                             # 11 tests: access, drafts, evidence gaps, audit chain, tool surface, review CLI
+pytest && ruff check src tests && mypy              # 28 tests: identity, roles, drafts under race, audit chain/MAC/rotation/forwarding, OIDC, tool schemas
 COMPLIANCE_MCP_TOKEN=dev compliance-mcp            # http://127.0.0.1:8765/mcp
 ```
 
@@ -86,8 +88,9 @@ and after any model or prompt change.
 
 ## What is real and what is a stub
 
-Real: the MCP server, its access rules, the audit chain, the review CLI, the tests, the skills,
-the Hermes config shape, and the compose topology.
+Real: the MCP server, its identity and access rules, the MAC'd audit chain with rotation and
+spooled forwarding, the SQLite review queue, the OIDC-verified review CLI, the tests, the skills,
+the Hermes config, the CI pipeline, and the compose topology.
 
 Stubs: the five adapters in `mcp/src/compliance_mcp/store.py` read JSON and Markdown fixtures.
 Each is the integration contract for the real policy repository, GRC platform, ticketing system,

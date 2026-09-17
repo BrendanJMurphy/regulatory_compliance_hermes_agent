@@ -8,9 +8,9 @@ HERMES=${HERMES:-hermes}
 # `deliver=teams` routes to the conversation in TEAMS_HOME_CHANNEL (set in .env, or via /sethome
 # from inside the target channel). Flags below verified against hermes_cli/subcommands/cron.py (0.21.3).
 CHANNEL=${COMPLIANCE_TEAMS_CHANNEL:-"teams"}
-# The service identity used as `requester` for unattended runs. Must be in the allowlist
-# (users.json) and in the compliance-analysts group so it can file drafts.
-SERVICE_UPN=${COMPLIANCE_SERVICE_UPN:-"priya.natarajan@example-am.com"}
+# Unattended runs act as a dedicated service account (kind=service in users.json). It can file
+# drafts but can never approve, and it is never a real person's identity.
+SERVICE_UPN=${COMPLIANCE_SERVICE_UPN:-"svc-regcomply@example-am.com"}
 
 $HERMES cron create "weekdays at 7am" \
   "Run the regulatory-intake skill for releases published since yesterday. Use requester=${SERVICE_UPN}. File one policy_mapping draft per release and post a summary with draft ids." \

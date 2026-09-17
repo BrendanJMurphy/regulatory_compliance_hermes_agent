@@ -65,11 +65,12 @@ agent:
   reasoning_effort: "medium"
   verify_on_stop: false
 
-# The terminal backend is disabled above; this is belt-and-braces so a misconfiguration
-# cannot silently hand the agent a shell on the gateway host.
+# The terminal toolset is disabled above, so this backend is never used. "local" is set only
+# to stop Hermes logging a Docker-socket error on every session start (noise in errors.log
+# that an auditor would have to explain). Re-enabling the toolset is a config change that
+# must go through review; see docs/controls-matrix.md DR-2.
 terminal:
-  backend: docker
-  docker_network: false
+  backend: local
   timeout: 10
 
 # ---- Skills: only the reviewed, checked-in set. ---------------------------------------------
@@ -84,12 +85,13 @@ skills:
   auto_load:
     - regcomply-charter
 
-# ---- Memory: allowed for continuity, but writes require approval and no user profiling -----
+# ---- Memory: off. One gateway serves many users; a shared memory would let facts from one
+# analyst's session surface in another's. Continuity comes from the draft queue and the
+# ticketing system, both of which are governed records. Re-enable only with per-user profiles.
 memory:
-  memory_enabled: true
+  memory_enabled: false
   user_profile_enabled: false
   write_approval: true
-  memory_char_limit: 2200
 
 # ---- Governed systems of record, via the compliance MCP server --------------------------------
 mcp_servers:

@@ -1,14 +1,26 @@
 # Regulatory Change and Evidence agent: Hermes gateway + compliance MCP server.
-# Both services sit on an internal network. The gateway's only external needs are the
-# Teams webhook (inbound on TEAMS_PORT) and the firm's model endpoint (outbound, allowlisted
-# at the egress proxy). The MCP server has no network access except from the gateway.
+#
+# Topology: both services share a private bridge network. The gateway's only external needs
+# are the Teams webhook (inbound) and the model endpoint (outbound, allowlisted at the egress
+# proxy). The MCP server accepts connections from the gateway only.
+#
+# State: the audit chain and draft database live in ./state on the host so they can be backed
+# up and shipped by the platform's normal file agents. Hermes's own state lives in ./hermes.
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging:
+    driver: json-file
+    options: { max-size: "50m", max-file: "5" }
 
 services:
   gateway:
+    <<: *hardening
     # hermes-agent 0.21.3 (upstream c294e945), pinned by digest. Update deliberately and re-run docs/verification.md.
     image: nousresearch/hermes-agent@sha256:078d9b56d01ecfeeb38cbfd846d901a4077b6c7ae8636106d88e20d98df7f80c
     container_name: regcomply-gateway
-    restart: unless-stopped
     command: ["gateway", "run"]
     env_file: .env
     environment:
@@ -17,18 +29,25 @@ services:
     volumes:
       - ./hermes:/opt/data
     ports:
-      - "${TEAMS_PORT:-3978}:3978"
+      # Bind to loopback; a reverse proxy or tunnel terminates TLS and forwards to this port.
+      - "${TEAMS_BIND:-127.0.0.1}:${TEAMS_PORT:-3978}:3978"
     networks: [internal]
     depends_on:
       compliance-mcp:
         condition: service_healthy
-    read_only: false
-    security_opt: [no-new-privileges:true]
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 4g }
+    # s6-overlay (PID 1 in the image) needs these to chown the data volume, drop to the hermes
+    # user, and signal its supervised services at shutdown. Without KILL a one-shot
+    # `compose run ... chat -q` never exits. Everything else stays dropped.
+    cap_add: [CHOWN, FOWNER, SETUID, SETGID, DAC_OVERRIDE, KILL]
 
   compliance-mcp:
+    <<: *hardening
     build: ./mcp
+    image: regcomply-mcp:0.2.0
     container_name: regcomply-mcp
-    restart: unless-stopped
     env_file: .env
     environment:
       COMPLIANCE_MCP_HOST: 0.0.0.0
@@ -36,23 +55,24 @@ services:
       COMPLIANCE_MCP_ALLOWED_HOSTS: compliance-mcp:8765,localhost:8765,127.0.0.1:8765
       COMPLIANCE_DATA_DIR: /data
       COMPLIANCE_STATE_DIR: /state
-      COMPLIANCE_AUDIT_LOG: /state/audit.jsonl
+      COMPLIANCE_AUDIT_LOG: /state/audit/audit.jsonl
     volumes:
       - ./mcp/data:/data:ro
-      - mcp-state:/state
+      - ./state:/state
     networks: [internal]
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8765), 2)"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=2).status == 200 else 1)"]
       interval: 10s
       timeout: 3s
       retries: 5
-    security_opt: [no-new-privileges:true]
+      start_period: 5s
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512m }
     read_only: true
     tmpfs: [/tmp]
+    user: "10001:10001"
 
 networks:
   internal:
     driver: bridge
-
-volumes:
-  mcp-state:

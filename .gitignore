@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 mcp/state/
+state/
 hermes/.env
 hermes/cron/
 hermes/sessions/

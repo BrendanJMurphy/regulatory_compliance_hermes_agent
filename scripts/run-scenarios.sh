@@ -33,9 +33,11 @@ ask 08-attestations         "requester=$ANALYST. Run the attestation-reminders s
 echo "== drafts pending"; mcp compliance-review list | tee "$RUN/09-drafts.txt"
 FIRST=$(mcp compliance-review list | awk 'NR==1{print $1}')
 if [ -n "$FIRST" ]; then
-  echo "== four-eyes check (requester self-approve must fail)"; mcp compliance-review approve "$FIRST" --as "$ANALYST" 2>&1 | tee -a "$RUN/09-drafts.txt" || true
+  echo "== four-eyes check (requester self-approve must fail)"; mcp compliance-review approve "$FIRST" --as "$ANALYST" 2>&1 | tee -a "$RUN/09-drafts.txt" || true  # dev identity mode
   echo "== approve as approver"; mcp compliance-review approve "$FIRST" --as "$APPROVER" --note "scenario run" | tee -a "$RUN/09-drafts.txt"
   mcp compliance-review show "$FIRST" > "$RUN/10-approved-draft.json"
 fi
 echo "== audit"; mcp compliance-audit verify | tee "$RUN/11-audit.txt"; mcp compliance-audit tail 60 | tee -a "$RUN/11-audit.txt"
+cp state/audit/audit.jsonl "$RUN/11-audit.jsonl"
 echo; echo "outputs in $RUN"
+echo "== assertions"; ./scripts/check-run.py "$RUN"

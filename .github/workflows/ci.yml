@@ -1,0 +1,80 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp:
+    name: compliance-mcp (lint, types, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: mcp }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Lint
+        run: ruff check src tests && ruff format --check src tests
+      - name: Types
+        run: mypy
+      - name: Tests
+        run: pytest -q
+      - name: Lock file is current
+        run: |
+          uv pip compile pyproject.toml --generate-hashes --python-version 3.12 -o /tmp/requirements.txt -q
+          diff <(grep -v '^#' requirements.txt) <(grep -v '^#' /tmp/requirements.txt)
+
+  image:
+    name: docker build and compose validation
+    runs-on: ubuntu-latest
+    needs: mcp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build MCP image
+        run: docker build -t regcomply-mcp:ci ./mcp
+      - name: Image smoke test
+        run: |
+          docker run --rm -e COMPLIANCE_DATA_DIR=/data -e COMPLIANCE_STATE_DIR=/tmp/s -e COMPLIANCE_AUDIT_LOG=/tmp/s/audit/a.jsonl \
+            -v "$PWD/mcp/data:/data:ro" regcomply-mcp:ci python -c "
+          from compliance_mcp.server import build_service; from compliance_mcp.settings import SETTINGS
+          from compliance_mcp.models import CallerIdentity, IdentitySource
+          svc = build_service(SETTINGS)
+          r = svc.policy_list(CallerIdentity(requester='tom.reyes@example-am.com', source=IdentitySource.PARAMETER))
+          assert r.ok, r; print(r.summary)"
+      - name: Compose file validates
+        run: cp .env.example .env && docker compose config --quiet
+      - name: Scan image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: regcomply-mcp:ci
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+  hermes-config:
+    name: hermes profile sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolset denylist and skill lockdown are intact
+        run: |
+          python3 - <<'PY'
+          import yaml, sys
+          cfg = yaml.safe_load(open("hermes/config.yaml"))
+          disabled = set(cfg["agent"]["disabled_toolsets"])
+          for required in ("web", "browser", "terminal", "file", "delegation", "session_search"):
+              assert required in disabled, f"{required} must stay disabled"
+          assert cfg["skills"]["project_discovery"] is False and cfg["skills"]["external_dirs"] == []
+          assert cfg["memory"]["memory_enabled"] is False
+          assert cfg["mcp_servers"]["compliance"]["url"].startswith("${")
+          import os; assert os.path.exists("hermes/.no-bundled-skills")
+          print("hermes config ok")
+          PY

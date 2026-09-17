@@ -4,6 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 docker compose down --remove-orphans >/dev/null 2>&1 || true
-docker volume rm -f "$(basename "$PWD")_mcp-state" >/dev/null 2>&1 || true
+rm -rf state/audit state/drafts.sqlite3 state/drafts.sqlite3-wal state/drafts.sqlite3-shm
+mkdir -p state/audit
 rm -rf hermes/sessions hermes/memories hermes/cron hermes/logs hermes/cache hermes/backups hermes/*.db hermes/skills/autonomous-ai-agents
 echo "state reset"
