@@ -3,6 +3,12 @@
 # resolving anything. Runs as a fixed non-root uid that matches docker-compose.yml.
 FROM python:3.12-slim AS base
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+# Apply Debian security updates so the image does not ship known-fixed OS CVEs. CI scans the
+# built image with Trivy and fails on any fixable HIGH or CRITICAL finding.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 FROM base AS build
 WORKDIR /build
